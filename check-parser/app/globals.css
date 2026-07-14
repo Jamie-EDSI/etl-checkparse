@@ -3,47 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --navy: #070d24;
-  --navy-card: #0d1535;
-  --navy-card-hover: #111d45;
-  --blue: #3b82f6;
-  --blue-glow: rgba(59,130,246,0.25);
+  --bg:           #0a0a0a;
+  --sidebar-bg:   #111111;
+  --content-bg:   #0f0f0f;
+  --card-bg:      #1a1a1a;
+  --card-bg-alt:  #1c1c1c;
+  --border:       #2a2a2a;
+  --border-sub:   #1f1f1f;
+  --text:         #e5e5e5;
+  --muted:        #666666;
+  --muted-bright: #888888;
+  --cyan:         #00d4ff;
+  --cyan-glow:    rgba(0, 212, 255, 0.18);
 }
 
 * { box-sizing: border-box; }
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--navy);
-  color: white;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
 }
 
-.font-display { font-family: 'DM Serif Display', Georgia, serif; }
-
+/* ── Drop zone ───────────────────────────────────── */
 .drop-zone {
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 .drop-zone.drag-over {
-  border-color: var(--blue) !important;
-  background: rgba(59,130,246,0.08) !important;
+  border-color: var(--cyan) !important;
+  background: rgba(0, 212, 255, 0.05) !important;
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.12) !important;
 }
 .drop-zone.has-file {
-  border-color: rgba(59,130,246,0.5);
-  background: rgba(59,130,246,0.06);
+  border-color: rgba(0, 212, 255, 0.45) !important;
+  background: rgba(0, 212, 255, 0.04) !important;
 }
 
-.card-dark {
-  background: var(--navy-card);
-  border: 1px solid rgba(255,255,255,0.06);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.card-dark:hover {
-  border-color: rgba(59,130,246,0.35);
-  box-shadow: 0 0 28px rgba(59,130,246,0.12);
-}
-
+/* ── Animations ──────────────────────────────────── */
 .spin { animation: spin 0.75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.fade-in { animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.25s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
