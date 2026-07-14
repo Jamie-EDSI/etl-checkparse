@@ -13,19 +13,16 @@ interface Student {
   notes?: string
 }
 
-// ── Upload Tile ───────────────────────────────────────────────────────
 function UploadTile({
-  id, label, sublabel, accept, file, onFile, icon, accent, optional
+  id, label, sublabel, accept, file, onFile, icon, optional
 }: {
   id: string, label: string, sublabel: string, accept: string,
   file: File | null, onFile: (f: File | null) => void,
-  icon: React.ReactNode, accent: string, optional?: boolean
+  icon: React.ReactNode, optional?: boolean
 }) {
   const [drag, setDrag] = useState(false)
   const ref = useRef<HTMLInputElement>(null)
-
   const handle = useCallback((f: File) => onFile(f), [onFile])
-
   const onDrop = (e: DragEvent) => {
     e.preventDefault(); setDrag(false)
     const f = e.dataTransfer.files[0]; if (f) handle(f)
@@ -37,48 +34,50 @@ function UploadTile({
       onDragOver={(e) => { e.preventDefault(); setDrag(true) }}
       onDragLeave={() => setDrag(false)}
       onDrop={onDrop}
-      className={`drop-zone relative cursor-pointer rounded-2xl border-2 border-dashed p-6 flex flex-col items-center justify-center text-center min-h-[160px] ${
-        file ? 'has-file' : drag ? 'drag-over border-blue-400 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
+      className={`drop-zone relative cursor-pointer rounded-2xl border-2 border-dashed p-6 flex flex-col items-center justify-center text-center min-h-[170px] ${
+        file
+          ? 'has-file'
+          : drag
+            ? 'drag-over'
+            : 'border-white/10 bg-white/[0.02] hover:border-blue-500/40 hover:bg-blue-500/[0.04] hover:shadow-[0_0_28px_rgba(59,130,246,0.1)]'
       }`}
     >
       <input ref={ref} type="file" accept={accept} className="hidden"
         onChange={(e: ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handle(f) }} />
 
       {optional && !file && (
-        <span className="absolute top-2.5 right-3 text-xs text-gray-400 font-medium">optional</span>
+        <span className="absolute top-2.5 right-3 text-xs text-white/25 font-medium">optional</span>
       )}
 
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${file ? 'bg-blue-100' : 'bg-gray-100'}`}>
-        <span className={file ? 'text-blue-600' : 'text-gray-400'}>{icon}</span>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${file ? 'bg-blue-500/20' : 'bg-white/5'}`}>
+        <span className={file ? 'text-blue-400' : 'text-white/35'}>{icon}</span>
       </div>
 
-      <p className={`font-semibold text-sm mb-1 ${file ? 'text-blue-700' : 'text-gray-700'}`}>{label}</p>
-      <p className="text-xs text-gray-400 mb-2">{sublabel}</p>
+      <p className={`font-semibold text-sm mb-1 ${file ? 'text-blue-300' : 'text-white/75'}`}>{label}</p>
+      <p className="text-xs text-white/30 mb-2">{sublabel}</p>
 
       {file ? (
         <div className="flex items-center gap-1.5">
-          <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-medium ${accent} max-w-[180px] truncate`}>
+          <span className="inline-block text-xs px-2.5 py-1 rounded-full font-medium bg-blue-500/20 text-blue-300 max-w-[180px] truncate">
             ✓ {file.name}
           </span>
           <button
             onClick={(e) => { e.stopPropagation(); onFile(null); if (ref.current) ref.current.value = '' }}
-            className="text-gray-400 hover:text-gray-600 text-xs leading-none"
+            className="text-white/25 hover:text-white/55 text-xs leading-none"
             title="Remove"
           >✕</button>
         </div>
       ) : (
-        <span className="text-xs text-gray-400">Click or drag & drop</span>
+        <span className="text-xs text-white/20">Click or drag & drop</span>
       )}
     </div>
   )
 }
 
-// ── Badge ─────────────────────────────────────────────────────────────
 function Badge({ text, color }: { text: string, color: string }) {
   return <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color}`}>{text}</span>
 }
 
-// ── Main ──────────────────────────────────────────────────────────────
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [xlsxFile, setXlsxFile] = useState<File | null>(null)
@@ -91,17 +90,13 @@ export default function Home() {
   const parse = async () => {
     if (!pdfFile) return
     setLoading(true); setError(null); setStudents(null); setXlsxBase64(null)
-
     try {
       const fd = new FormData()
       fd.append('pdf', pdfFile)
       if (xlsxFile) fd.append('xlsx', xlsxFile)
-
       const res = await fetch('/api/parse-check', { method: 'POST', body: fd })
       const data = await res.json()
-
       if (data.error) { setError(data.error); setLoading(false); return }
-
       setStudents(data.students)
       setXlsxBase64(data.xlsxBase64)
       setMonth(data.students?.[0]?.month ?? '')
@@ -128,46 +123,92 @@ export default function Home() {
   const totalAmount = students?.reduce((s, r) => s + r.amount, 0) ?? 0
   const checkNum = students?.[0]?.checkNumber ?? ''
 
-  // Milestone color
   const milestoneColor = (m: string) => {
     const t = m.toLowerCase()
-    if (t.startsWith('je')) return 'bg-purple-100 text-purple-700'
-    if (t.startsWith('wpr')) return 'bg-blue-100 text-blue-700'
-    if (t.startsWith('pse')) return 'bg-teal-100 text-teal-700'
-    if (t.startsWith('sa')) return 'bg-amber-100 text-amber-700'
-    if (t.startsWith('wbl')) return 'bg-green-100 text-green-700'
-    return 'bg-gray-100 text-gray-600'
+    if (t.startsWith('je'))  return 'bg-purple-500/20 text-purple-300'
+    if (t.startsWith('wpr')) return 'bg-blue-500/20 text-blue-300'
+    if (t.startsWith('pse')) return 'bg-teal-500/20 text-teal-300'
+    if (t.startsWith('sa'))  return 'bg-amber-500/20 text-amber-300'
+    if (t.startsWith('wbl')) return 'bg-green-500/20 text-green-300'
+    return 'bg-white/10 text-white/55'
   }
 
+  const step = students ? 'results' : 'upload'
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
+    <main
+      className="min-h-screen"
+      style={{ background: 'radial-gradient(ellipse 90% 55% at 50% -5%, rgba(59,130,246,0.18), transparent) #070d24' }}
+    >
+      {/* ── Header ── */}
+      <div className="border-b border-white/[0.06]">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-6">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <span className="text-white font-semibold text-sm tracking-tight">Pre-ETS Check Parser</span>
           </div>
-          <div>
-            <h1 className="text-base font-semibold text-gray-900 leading-none">Pre-ETS Check Parser</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Extract student payment data from check PDFs</p>
-          </div>
+
+          {/* Step pills */}
+          <nav className="flex items-center gap-1 ml-4">
+            <button
+              onClick={step === 'results' ? reset : undefined}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                step === 'upload'
+                  ? 'bg-white text-gray-900 shadow-[0_0_16px_rgba(255,255,255,0.15)]'
+                  : 'text-white/45 hover:text-white/70'
+              }`}
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              Upload
+            </button>
+            <button
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                step === 'results'
+                  ? 'bg-white text-gray-900 shadow-[0_0_16px_rgba(255,255,255,0.15)]'
+                  : 'text-white/25 cursor-default'
+              }`}
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Results
+            </button>
+          </nav>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-3xl mx-auto px-6 py-10 space-y-7">
 
-        {/* Upload section */}
+        {/* ── Hero ── */}
+        {!students && (
+          <div className="text-center pb-2 fade-in">
+            <h1 className="font-display text-5xl text-white leading-[1.12] tracking-tight">
+              Extract Student Payment Data
+            </h1>
+            <p className="font-display text-5xl text-blue-400 leading-[1.12] mt-1">
+              from Check PDFs
+            </p>
+            <p className="text-white/35 mt-5 text-sm leading-relaxed">
+              Upload a payment check PDF to extract student rows — then optionally attach your<br/>
+              existing tracking spreadsheet to append data directly to the right month tab.
+            </p>
+          </div>
+        )}
+
+        {/* ── Upload ── */}
         {!students && (
           <div className="space-y-4 fade-in">
-            <p className="text-sm text-gray-500">Upload a check PDF to extract student rows — then optionally attach your existing tracking spreadsheet to append the new data directly into the right month tab.</p>
-
             <div className="grid grid-cols-2 gap-4">
               <UploadTile
                 id="pdf" label="Check PDF" sublabel="The payment check to parse"
                 accept=".pdf" file={pdfFile} onFile={setPdfFile}
-                accent="bg-blue-100 text-blue-700"
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -176,8 +217,7 @@ export default function Home() {
               />
               <UploadTile
                 id="xlsx" label="Tracking spreadsheet" sublabel="Append to existing file"
-                accept=".xlsx,.xls" file={xlsxFile} onFile={setXlsxFile}
-                accent="bg-green-100 text-green-700" optional
+                accept=".xlsx,.xls" file={xlsxFile} onFile={setXlsxFile} optional
                 icon={
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M3 14h18M10 3v18M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/>
@@ -187,7 +227,7 @@ export default function Home() {
             </div>
 
             {!xlsxFile && (
-              <p className="text-xs text-gray-400 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+              <p className="text-xs text-white/30 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5">
                 💡 No spreadsheet uploaded — a fresh one will be created with the correct month tab.
               </p>
             )}
@@ -195,7 +235,7 @@ export default function Home() {
             <button
               onClick={parse}
               disabled={!pdfFile || loading}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-lg hover:shadow-blue-300/60"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-[0_0_28px_rgba(59,130,246,0.5)]"
             >
               {loading ? (
                 <>
@@ -203,7 +243,7 @@ export default function Home() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
-                  Reading check with AI…
+                  Reading check…
                 </>
               ) : (
                 <>
@@ -217,57 +257,63 @@ export default function Home() {
           </div>
         )}
 
-        {/* Error */}
+        {/* ── Error ── */}
         {error && (
-          <div className="fade-in bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          <div className="fade-in bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-300">
             <strong>Error:</strong> {error}
-            <button onClick={() => setError(null)} className="ml-3 text-red-400 hover:text-red-600 text-xs underline">dismiss</button>
+            <button onClick={() => setError(null)} className="ml-3 text-red-400/60 hover:text-red-300 text-xs underline">dismiss</button>
           </div>
         )}
 
-        {/* Results */}
+        {/* ── Results ── */}
         {students && (
           <div className="fade-in space-y-4">
+            {/* Hero on results */}
+            <div className="pb-1">
+              <p className="text-xs font-semibold text-blue-400/70 uppercase tracking-widest mb-1">Extracted</p>
+              <h2 className="font-display text-4xl text-white">Student Rows</h2>
+            </div>
+
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: 'Check #', value: checkNum || '—' },
-                { label: 'Month', value: month || '—' },
+                { label: 'Month',   value: month || '—' },
                 { label: 'Students', value: String(students.length) },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-white rounded-xl border border-gray-200 px-4 py-3">
-                  <p className="text-xs text-gray-400 font-medium mb-0.5">{label}</p>
-                  <p className="text-lg font-semibold text-gray-900">{value}</p>
+                <div key={label} className="card-dark rounded-2xl px-4 py-3">
+                  <p className="text-xs text-white/35 font-medium mb-0.5">{label}</p>
+                  <p className="text-lg font-semibold text-white">{value}</p>
                 </div>
               ))}
             </div>
 
             {/* Student table */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-700">Extracted rows</p>
-                <p className="text-sm text-gray-500">
-                  Total: <span className="font-semibold text-gray-900">${totalAmount.toLocaleString()}</span>
+            <div className="card-dark rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+                <p className="text-sm font-semibold text-white/80">Extracted rows</p>
+                <p className="text-sm text-white/40">
+                  Total: <span className="font-semibold text-white">${totalAmount.toLocaleString()}</span>
                 </p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
+                    <tr className="border-b border-white/[0.05]">
                       {['Last name', 'First name', 'Customer ID', 'Milestone', 'Amount', 'Notes'].map(h => (
-                        <th key={h} className="px-3 py-2.5 text-left font-semibold text-gray-500 whitespace-nowrap">{h}</th>
+                        <th key={h} className="px-3 py-2.5 text-left font-semibold text-white/35 whitespace-nowrap">{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-white/[0.04]">
                     {students.map((s, i) => (
-                      <tr key={i} className="hover:bg-gray-50">
-                        <td className="px-3 py-2.5 font-medium text-gray-800">{s.lastName}</td>
-                        <td className="px-3 py-2.5 text-gray-700">{s.firstName}</td>
-                        <td className="px-3 py-2.5 text-gray-500 font-mono">{s.customerId}</td>
+                      <tr key={i} className="hover:bg-white/[0.025] transition-colors">
+                        <td className="px-3 py-2.5 font-medium text-white/90">{s.lastName}</td>
+                        <td className="px-3 py-2.5 text-white/70">{s.firstName}</td>
+                        <td className="px-3 py-2.5 text-white/45 font-mono">{s.customerId}</td>
                         <td className="px-3 py-2.5"><Badge text={s.milestone} color={milestoneColor(s.milestone)} /></td>
-                        <td className="px-3 py-2.5 font-semibold text-gray-800">${s.amount.toLocaleString()}</td>
-                        <td className="px-3 py-2.5 text-gray-400">{s.notes ?? ''}</td>
+                        <td className="px-3 py-2.5 font-semibold text-white/90">${s.amount.toLocaleString()}</td>
+                        <td className="px-3 py-2.5 text-white/35">{s.notes ?? ''}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -279,28 +325,29 @@ export default function Home() {
             <div className="flex gap-3">
               <button
                 onClick={download}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-lg hover:shadow-green-300/60"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-[0_0_28px_rgba(59,130,246,0.5)]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Download updated spreadsheet
+                Download spreadsheet
               </button>
               <button
                 onClick={reset}
-                className="px-5 py-3 border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm rounded-2xl transition-all hover:shadow-md hover:shadow-gray-200/80"
+                className="px-5 py-3.5 border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/60 hover:text-white/80 font-medium text-sm rounded-2xl transition-all hover:shadow-[0_0_18px_rgba(255,255,255,0.06)]"
               >
-                Parse another check
+                Parse another
               </button>
             </div>
 
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-white/25 text-center">
               {xlsxFile
                 ? `Rows appended to the "${month}" tab of ${xlsxFile.name}`
                 : `Fresh spreadsheet created with a "${month}" tab`}
             </p>
           </div>
         )}
+
       </div>
     </main>
   )

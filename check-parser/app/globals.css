@@ -3,36 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --blue: #1a56db;
-  --blue-dark: #1245b0;
-  --blue-light: #ebf5ff;
-  --green: #057a55;
-  --green-light: #def7ec;
-  --red-light: #fde8e8;
-  --red: #c81e1e;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-500: #6b7280;
-  --gray-700: #374151;
-  --gray-900: #111827;
+  --navy: #070d24;
+  --navy-card: #0d1535;
+  --navy-card-hover: #111d45;
+  --blue: #3b82f6;
+  --blue-glow: rgba(59,130,246,0.25);
 }
 
 * { box-sizing: border-box; }
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--gray-50);
-  color: var(--gray-900);
+  background: var(--navy);
+  color: white;
   min-height: 100vh;
 }
 
-.drop-zone { transition: border-color 0.15s, background 0.15s; }
-.drop-zone.drag-over { border-color: var(--blue) !important; background: var(--blue-light) !important; }
-.drop-zone.has-file  { border-color: var(--blue); background: #f0f4ff; }
+.font-display { font-family: 'DM Serif Display', Georgia, serif; }
+
+.drop-zone {
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.drop-zone.drag-over {
+  border-color: var(--blue) !important;
+  background: rgba(59,130,246,0.08) !important;
+}
+.drop-zone.has-file {
+  border-color: rgba(59,130,246,0.5);
+  background: rgba(59,130,246,0.06);
+}
+
+.card-dark {
+  background: var(--navy-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card-dark:hover {
+  border-color: rgba(59,130,246,0.35);
+  box-shadow: 0 0 28px rgba(59,130,246,0.12);
+}
 
 .spin { animation: spin 0.75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.fade-in { animation: fadeIn 0.25s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
