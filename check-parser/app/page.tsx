@@ -153,10 +153,6 @@ export default function Home() {
             <h1 className="text-base font-semibold text-gray-900 leading-none">Pre-ETS Check Parser</h1>
             <p className="text-xs text-gray-400 mt-0.5">Extract student payment data from check PDFs</p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
-            Powered by Claude
-          </div>
         </div>
       </div>
 
@@ -199,7 +195,7 @@ export default function Home() {
             <button
               onClick={parse}
               disabled={!pdfFile || loading}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-lg hover:shadow-blue-300/60"
             >
               {loading ? (
                 <>
@@ -283,7 +279,7 @@ export default function Home() {
             <div className="flex gap-3">
               <button
                 onClick={download}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-xl transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-2xl transition-all hover:shadow-lg hover:shadow-green-300/60"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -292,7 +288,7 @@ export default function Home() {
               </button>
               <button
                 onClick={reset}
-                className="px-5 py-3 border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm rounded-xl transition-colors"
+                className="px-5 py-3 border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 font-medium text-sm rounded-2xl transition-all hover:shadow-md hover:shadow-gray-200/80"
               >
                 Parse another check
               </button>
