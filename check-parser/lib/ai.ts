@@ -106,7 +106,7 @@ Return ONLY a JSON object in this exact format — no preamble, no markdown fenc
 }
 
 Rules:
-- milestone comes from the last 3 digits / characters of the Invoice Number column
+- milestone comes from the Invoice Number column: take the FULL milestone code, which is the entire run of letters immediately followed by its number (e.g. "JE4", "WPR2", "WBL1"). Do NOT truncate to a fixed number of characters — milestone codes can be 2, 3, or more letters long, and every letter must be included
 - amount is numeric only (no $ sign)
 - month is the calendar month this check batch covers (from page 3)
 - checkNumber is the check number at the top of the document
