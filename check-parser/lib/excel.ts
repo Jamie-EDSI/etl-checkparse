@@ -9,6 +9,63 @@ const MONTH_ORDER = [
 const HEADERS = ['Check', 'Last Name', 'First Name', 'Customer ID', 'Milestone', 'Amount', 'Notes']
 
 /**
+ * Turns a list of students into sheet rows, grouped by checkNumber
+ * (in order of first appearance), with a Subtotal row inserted after
+ * each check's group.
+ */
+function buildRowsWithSubtotals(students: ParsedStudent[]): (string | number)[][] {
+  const groups = new Map<string, ParsedStudent[]>()
+  for (const s of students) {
+    const key = s.checkNumber
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(s)
+  }
+
+  const rows: (string | number)[][] = []
+  for (const group of groups.values()) {
+    let subtotal = 0
+    for (const s of group) {
+      rows.push([
+        s.checkNumber,
+        s.lastName,
+        s.firstName,
+        s.customerId,
+        s.milestone,
+        s.amount,
+        s.notes ?? '',
+      ])
+      subtotal += s.amount
+    }
+    rows.push(['', '', '', '', 'Subtotal', subtotal, ''])
+  }
+  return rows
+}
+
+/**
+ * Recomputes the 'Totals' sheet from the current month sheets and
+ * ensures it's the first sheet in the workbook.
+ */
+function applyTotalsSheet(wb: XLSX.WorkBook): void {
+  const rows: (string | number)[][] = [['Month', 'Total']]
+
+  for (const month of MONTH_ORDER) {
+    const ws = wb.Sheets[month]
+    if (!ws) continue
+
+    const data = XLSX.utils.sheet_to_json<(string | number)[]>(ws, { header: 1, defval: '' })
+    const total = data
+      .slice(1) // skip header row
+      .filter(row => row[0] !== '')
+      .reduce((sum, row) => sum + (Number(row[5]) || 0), 0)
+
+    rows.push([month, total])
+  }
+
+  wb.Sheets['Totals'] = XLSX.utils.aoa_to_sheet(rows)
+  wb.SheetNames = ['Totals', ...wb.SheetNames.filter(n => n !== 'Totals')]
+}
+
+/**
  * Takes the existing workbook bytes + new students,
  * appends rows to the correct month sheet, returns updated bytes.
  */
@@ -49,19 +106,13 @@ export function appendToWorkbook(
     }
     const nextRow = (ws['!ref'] ? XLSX.utils.decode_range(ws['!ref']).e.r + 2 : 2)
 
-    const newRows = rows.map(s => [
-      s.checkNumber,
-      s.lastName,
-      s.firstName,
-      s.customerId,
-      s.milestone,
-      s.amount,
-      s.notes ?? '',
-    ])
+    const newRows = buildRowsWithSubtotals(rows)
 
     XLSX.utils.sheet_add_aoa(ws, newRows, { origin: { r: nextRow - 1, c: 0 } })
     wb.Sheets[month] = ws
   }
+
+  applyTotalsSheet(wb)
 
   return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
 }
@@ -72,10 +123,6 @@ export function appendToWorkbook(
 export function createFreshWorkbook(students: ParsedStudent[]): ArrayBuffer {
   const wb = XLSX.utils.book_new()
 
-  // Totals sheet placeholder
-  const totalsWs = XLSX.utils.aoa_to_sheet([['', 'Month', 'Total']])
-  XLSX.utils.book_append_sheet(wb, totalsWs, 'Totals')
-
   const byMonth: Record<string, ParsedStudent[]> = {}
   for (const s of students) {
     const m = s.month || 'Unknown'
@@ -85,13 +132,12 @@ export function createFreshWorkbook(students: ParsedStudent[]): ArrayBuffer {
 
   for (const month of MONTH_ORDER) {
     if (!byMonth[month]) continue
-    const rows = byMonth[month].map(s => [
-      s.checkNumber, s.lastName, s.firstName,
-      s.customerId, s.milestone, s.amount, s.notes ?? ''
-    ])
+    const rows = buildRowsWithSubtotals(byMonth[month])
     const ws = XLSX.utils.aoa_to_sheet([HEADERS, ...rows])
     XLSX.utils.book_append_sheet(wb, ws, month)
   }
+
+  applyTotalsSheet(wb)
 
   return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
 }
